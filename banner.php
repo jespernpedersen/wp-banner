@@ -41,7 +41,9 @@ function banner_style () {
     $style .= 'color: ' . $banner_frontend_options['textcolor'] . ';';
 
     // Style output
-    echo '<style> .banner {' . $style . '}</style>';
+    if(check_api_validation()) {
+        echo '<style> .banner {' . $style . '}</style>';
+    }
 }
 
 // Register backend view for API key
