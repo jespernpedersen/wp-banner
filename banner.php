@@ -26,8 +26,11 @@ add_filter( 'wp_body_open', 'banner_frontend' );
 function banner_frontend ( $content ) {
     $banner_frontend_options = get_option('banner_plugin_options_appearance');
     $banner_output = '<div class="banner">' . $banner_frontend_options['banner_text'] . '</div>';
-    $banner = print($banner_output);
-    $output = $banner . $content;
+    
+    if(check_api_validation()) {
+        $banner = print($banner_output);
+        $output = $banner . $content;
+    }
 }
 
 // Output frontend CSS
@@ -106,7 +109,7 @@ function check_api_validation() {
     );
     $response = wp_remote_post( 'http://127.0.0.1:8000/api/key/check', $args );
     $status = json_decode($response['body']);
-    if($status->code == 6) {
+    if($status->code == 6 && $validation['enable']) {
         return true;
     }
     else {
@@ -136,7 +139,7 @@ function banner_plugin_options_activate( $input ) {
 function banner_plugin_section_text() {
     echo '<p>Here you can set all the options for using the API</p>';
     if(!check_api_validation()) {
-        echo "Your plugin do not have a <span style='color:  red;'>validated key</span>. Please buy one and activate it here.";
+        echo "Your plugin do not have a <span style='color:  red;'>validated key</span> or you need to enable the banner plugin. Please buy one and activate it here.";
     }
 }
 
