@@ -74,7 +74,7 @@ function banner_appearance() {
 // Register settings
 function banner_customization() {
     // API Settings
-    register_setting( 'banner_plugin_options', 'banner_plugin_options', 'banner_plugin_options_validate');
+    register_setting( 'banner_plugin_options', 'banner_plugin_options', 'banner_plugin_options_activate');
     add_settings_section( 'api_settings', 'API Settings', 'banner_plugin_section_text', 'banner_plugin' );
 
     add_settings_field( 'banner_plugin_enable', 'Enable Banner', 'banner_plugin_setting_enable', 'banner_plugin', 'api_settings');
@@ -103,9 +103,8 @@ function check_api_validation() {
         'body' => $body,
     );
     $response = wp_remote_post( 'http://127.0.0.1:8000/api/key/check', $args );
-    $code = $response['response']['code'];
     $status = json_decode($response['body']);
-    if($status->code == 6 && $status->message == 'Key is active') {
+    if($status->code == 6) {
         return true;
     }
     else {
@@ -114,22 +113,20 @@ function check_api_validation() {
 }
 
 
-function banner_plugin_options_validate( $input ) {
+function banner_plugin_options_activate( $input ) {
     $body = array(
-        'email'   => sanitize_email( $input['email'] ),
         'key'     => $input['api_key']
     );
     $args = array(
         'body' => $body,
     );
     $response = wp_remote_post( 'http://127.0.0.1:8000/api/key/check', $args );
-    $code = $response['response']['code'];
     $status = json_decode($response['body']);
-    if($status->code == 6 && $status->message == 'Key is active') {
+    if($status->code == 6) {
         return $input;
     }
     else {
-        wp_die("Your key could not be validated");
+        wp_die("Key could not be validated");
     }
 }
 
