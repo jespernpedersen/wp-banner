@@ -14,7 +14,9 @@ if( is_admin() ) {
     function banner_options() {
         add_menu_page( 'Settings', 'Banner', 'manage_options', 'jnp-banner', 'banner_settings', 'dashicons-feedback' );
         add_submenu_page('jnp-banner', 'Settings', 'Settings', 'manage_options', 'jnp-banner' );
-        add_submenu_page('jnp-banner', 'Appearance', 'Appearance', 'manage_options', 'banner-appearance', 'banner_appearance' );
+        if(check_api_validation()) {
+            add_submenu_page('jnp-banner', 'Appearance', 'Appearance', 'manage_options', 'banner-appearance', 'banner_appearance' );
+        }
     }
     add_action('admin_menu', 'banner_options');
 }
@@ -61,8 +63,6 @@ function banner_appearance() {
     <h1>Appearance</h1>
     <form action="options.php" method="post">
         <?php 
-        $options = get_option( 'banner_plugin_options' );
-        print_r($options);
         settings_fields( 'banner_plugin_options_appearance' );
         do_settings_sections( 'banner_frontend' ); 
         ?>
@@ -78,8 +78,8 @@ function banner_customization() {
     add_settings_section( 'api_settings', 'API Settings', 'banner_plugin_section_text', 'banner_plugin' );
 
     add_settings_field( 'banner_plugin_enable', 'Enable Banner', 'banner_plugin_setting_enable', 'banner_plugin', 'api_settings');
+    add_settings_field( 'banner_plugin_email', 'Email', 'banner_plugin_setting_email', 'banner_plugin', 'api_settings');
     add_settings_field( 'banner_plugin_apikey', 'API Key', 'banner_plugin_setting_api_key', 'banner_plugin', 'api_settings' );
-    add_settings_field( 'banner_plugin_startdate', 'Start Date', 'banner_plugin_setting_start_date', 'banner_plugin', 'api_settings' );
 
     // Appearance Settings
     register_setting( 'banner_plugin_options_appearance', 'banner_plugin_options_appearance');
@@ -93,10 +93,11 @@ function banner_customization() {
 add_action('admin_init', 'banner_customization');
 
 
-function banner_plugin_options_validate( $input ) {
+function check_api_validation() {
+    $validation = get_option( 'banner_plugin_options' );
     $body = array(
-        'email'   => sanitize_email( 'some@email.com' ),
-        'key'     => 'ddGxT-B5Of1'
+        'email'   => sanitize_email( $validation['email'] ),
+        'key'     => $validation['api_key']
     );
     $args = array(
         'body' => $body,
@@ -105,46 +106,68 @@ function banner_plugin_options_validate( $input ) {
     $code = $response['response']['code'];
     $status = json_decode($response['body']);
     if($status->code == 6 && $status->message == 'Key is active') {
-        wp_die("Works!");
+        return true;
     }
     else {
-        wp_die("Key couldn't be validated");
+        return false;
     }
 }
 
-function banner_plugin_api_callback($request) {
-    $parameters = $request->get_query_params();
-    print_r($request);
-    wp_die();
+
+function banner_plugin_options_validate( $input ) {
+    $body = array(
+        'email'   => sanitize_email( $input['email'] ),
+        'key'     => $input['api_key']
+    );
+    $args = array(
+        'body' => $body,
+    );
+    $response = wp_remote_post( 'http://127.0.0.1:8000/api/key/check', $args );
+    $code = $response['response']['code'];
+    $status = json_decode($response['body']);
+    if($status->code == 6 && $status->message == 'Key is active') {
+        return $input;
+    }
+    else {
+        wp_die("Your key could not be validated");
+    }
 }
 
 // Set API section text
 function banner_plugin_section_text() {
     echo '<p>Here you can set all the options for using the API</p>';
+    if(!check_api_validation()) {
+        echo "Your plugin do not have a <span style='color:  red;'>validated key</span>. Please buy one and activate it here.";
+    }
 }
 
 // Set options for API input field
 function banner_plugin_setting_enable() {
     $options = get_option( 'banner_plugin_options' );
+    echo '<input value="0" name="banner_plugin_options[enable]" type="hidden">';
+    echo '<input value="1" name="banner_plugin_options[enable]" id="banner_plugin_setting_enable" ' . checked ( TRUE, esc_attr( $options['enable'] ), false ) . ' type="checkbox">';
+}
 
-    if(isset($options['enable'])) {
-        echo "<input id='banner_plugin_setting_enable' name='banner_plugin_options[enable]' type='checkbox' value='" . esc_attr( $options['enable'] ) . "' />";
+function banner_plugin_setting_email() {
+    $options = get_option( 'banner_plugin_options' );
+    if(isset($options['email'])) {
+        echo "<input id='banner_plugin_setting_email' name='banner_plugin_options[email] type='email' value='" . esc_attr( $options['email'] ) . "' />";
     }
     else {
-        echo "<input id='banner_plugin_setting_enable' name='banner_plugin_options[enable]' type='checkbox' value='' />";       
+        echo "<input id='banner_plugin_setting_email' name='banner_plugin_options[email] type='email' value='' />";
+
     }
 }
 
 // Set options for API input field
 function banner_plugin_setting_api_key() {
     $options = get_option( 'banner_plugin_options' );
-    echo "<input id='banner_plugin_setting_api_key' name='banner_plugin_options[api_key]' type='text' value='" . esc_attr( $options['api_key'] ) . "' />";
-}
-
-// Set options for Start Date of API key
-function banner_plugin_setting_start_date() {
-    $options = get_option( 'banner_plugin_options' );
-    echo "<input id='banner_plugin_setting_start_date' name='banner_plugin_options[start_date]' type='date' value='" . esc_attr( $options['start_date'] ) . "' />";
+    if(isset($options['api_key'])) {
+        echo "<input id='banner_plugin_setting_api_key' name='banner_plugin_options[api_key]' type='text' value='" . esc_attr( $options['api_key'] ) . "' />";
+    }
+    else {
+        echo "<input id='banner_plugin_setting_api_key' name='banner_plugin_options[api_key]' type='text' value='' />";
+    }
 }
 
 
