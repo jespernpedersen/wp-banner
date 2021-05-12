@@ -35,13 +35,13 @@ add_filter('wp_footer', 'banner_style');
 function banner_style () {
     $banner_frontend_options = get_option('banner_plugin_options_appearance');
     // Style options
-    $style = "";
-    $style .= "text-align: center;";
-    $style .= "background-color: " . $banner_frontend_options['bgcolor'] . ";";
-    $style .= "color: " . $banner_frontend_options['textcolor'] . ";";
+    $style = '';
+    $style .= 'text-align: center;';
+    $style .= 'background-color: ' . $banner_frontend_options['bgcolor'] . ';';
+    $style .= 'color: ' . $banner_frontend_options['textcolor'] . ';';
 
     // Style output
-    echo "<style> .banner {" . $style . "}</style>";
+    echo '<style> .banner {' . $style . '}</style>';
 }
 
 // Register backend view for API key
@@ -50,8 +50,8 @@ function banner_settings() {
     <h1>Banner</h1>
     <form action="options.php" method="post">
         <?php 
-        settings_fields( 'banner_plugin_options' );
-        do_settings_sections( 'banner_plugin' ); 
+            settings_fields( 'banner_plugin_options' );
+            do_settings_sections( 'banner_plugin' ); 
         ?>
         <input name="submit" class="button button-primary" type="submit" value="<?php esc_attr_e( 'Save' ); ?>" />
     </form>
@@ -63,8 +63,8 @@ function banner_appearance() {
     <h1>Appearance</h1>
     <form action="options.php" method="post">
         <?php 
-        settings_fields( 'banner_plugin_options_appearance' );
-        do_settings_sections( 'banner_frontend' ); 
+            settings_fields( 'banner_plugin_options_appearance' );
+            do_settings_sections( 'banner_frontend' ); 
         ?>
         <input name="submit" class="button button-primary" type="submit" value="<?php esc_attr_e( 'Save' ); ?>" />
     </form>
@@ -180,19 +180,19 @@ function banner_appearance_section_text() {
 // Set options for banner text input field
 function banner_plugin_setting_text() {
     $options = get_option( 'banner_plugin_options_appearance' );
-    echo "<input id='banner_plugin_setting_bannertext' name='banner_plugin_options_appearance[banner_text]' type='text' value='" . esc_attr( $options['banner_text'] ) . "' />";
+    echo '<input id="banner_plugin_setting_bannertext" name="banner_plugin_options_appearance[banner_text]" type="text" value="' . esc_attr( $options['banner_text'] ) . '" />';
 }
 
 // Set options for banner text input field
 function banner_plugin_bgcolor() {
     $options = get_option( 'banner_plugin_options_appearance' );
-    echo "<input id='banner_plugin_setting_bgcolor' name='banner_plugin_options_appearance[bgcolor]' type='color' value='" . esc_attr( $options['bgcolor'] ) . "' />";
+    echo '<input id="banner_plugin_setting_bgcolor" name="banner_plugin_options_appearance[bgcolor]" type="color" value="' . esc_attr( $options['bgcolor'] ) . '" />';
 }
 
 // Set options for banner text input field
 function banner_plugin_textcolor() {
     $options = get_option( 'banner_plugin_options_appearance' );
-    echo "<input id='banner_plugin_setting_textcolor' name='banner_plugin_options_appearance[textcolor]' type='color' value='" . esc_attr( $options['textcolor'] ) . "' />";
+    echo '<input id="banner_plugin_setting_textcolor" name="banner_plugin_options_appearance[textcolor]" type="color" value="' . esc_attr( $options['textcolor'] ) . '" />';
 }
 
 ?>
